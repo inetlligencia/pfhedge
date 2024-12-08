@@ -51,7 +51,7 @@ class HedgeLoss(Module, ABC):
 
         .. code::
 
-            loss(torch.full_like(pl, cash)) = loss(pl)
+            loss(torch.full_like(pl,  )) = loss(pl)
 
         By default, the output is computed by binary search.
         If analytic form is known, it is recommended to override this method
