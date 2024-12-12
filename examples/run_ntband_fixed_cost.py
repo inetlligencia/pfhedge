@@ -3,7 +3,7 @@
 # which is proposed in Imaki et al. 21.
 
 import sys
-
+import matplotlib.pyplot as plt
 import torch
 import torch.nn.functional as fn
 from torch import Tensor
@@ -90,3 +90,30 @@ if __name__ == "__main__":
     hedger.fit(derivative, n_paths=10000, n_epochs=200)
     price = hedger.price(derivative, n_paths=10000)
     print(f"Price={price:.5e}")
+
+    
+    # Generate data for plotting
+    log_moneyness = torch.linspace(-0.1, 0.1, 100)
+    bs_delta = []
+    ntb_min = []
+    ntb_max = []
+
+    for lm in log_moneyness:
+        input_features = torch.tensor([[lm.item(), 15 / 365, 0.22, 0.0]])
+        bs_delta.append(model.delta(input_features[:, :-1]).item())
+        ntb_band = model(input_features).detach()
+        ntb_min.append(ntb_band[:, 0].item())
+        ntb_max.append(ntb_band[:, 1].item())
+
+    # Plot the results
+    plt.figure(figsize=(8, 6))
+    plt.plot(log_moneyness, bs_delta, label="Black-Scholes delta", linestyle="dashed")
+    plt.plot(log_moneyness, ntb_min, label="No-transaction band (min)", linestyle="solid")
+    plt.plot(log_moneyness, ntb_max, label="No-transaction band (max)", linestyle="solid")
+
+    plt.xlabel("Log moneyness")
+    plt.ylabel("Hedging strategy / Band")
+    plt.title("No-transaction-band for European Option")
+    plt.legend()
+    plt.grid(True)
+    plt.show()
