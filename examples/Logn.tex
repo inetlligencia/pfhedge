@@ -1,0 +1,63 @@
+\documentclass[12pt]{article}
+\usepackage{amsmath,amssymb}
+
+\begin{document}
+
+\section*{Capped-Gain Payoff and its Expected Value}
+
+We consider a stock price $S_T$ (at future time $T$) following a lognormal distribution with initial price $S_0$. 
+We define a payoff function $\Pi(S_T)$, capped at threshold $H$, as follows:
+\[
+\Pi(S_T) 
+= 
+\begin{cases} 
+\alpha\,(S_T - S_0), & \quad S_T < H,\\[6pt]
+\alpha\,(H - S_0),   & \quad S_T \ge H,
+\end{cases}
+\]
+where $\alpha$ is a constant scaling parameter.
+
+\subsection*{Lognormal Distribution of $S_T$}
+Under the Black--Scholes model, $S_T$ is lognormally distributed. Specifically,
+\[
+\ln(S_T) \sim \mathcal{N}\!\Bigl(m,\;\sigma^2 T\Bigr)
+\quad\text{with}\quad
+m \;=\; \ln(S_0) + \bigl(r - \tfrac{1}{2}\sigma^2\bigr) T.
+\]
+Hence, the probability density function (PDF) of $S_T$ is given by
+\[
+f_{S_T}(s)
+\;=\;
+\frac{1}{s\,\sigma \sqrt{2\pi\,T}}
+\;\exp\!\Bigl(\!-\tfrac{(\ln s - m)^2}{2\,\sigma^2\,T}\Bigr),
+\quad
+s>0.
+\]
+
+\subsection*{Expected Payoff}
+The expected payoff under this model is the integral of $\Pi(s)$ against $f_{S_T}(s)$:
+\[
+\mathbb{E}\bigl[\Pi(S_T)\bigr]
+\;=\;
+\int_{0}^{\infty} \Pi(s)\,f_{S_T}(s)\,\mathrm{d}s.
+\]
+Splitting at $s=H$, we obtain
+\[
+\mathbb{E}\bigl[\Pi(S_T)\bigr]
+=
+\int_{0}^{H} \alpha\,(s - S_0)\,f_{S_T}(s)\,\mathrm{d}s
+\;+\;
+\int_{H}^{\infty} \alpha\,(H - S_0)\,f_{S_T}(s)\,\mathrm{d}s.
+\]
+In more compact notation:
+\[
+\mathbb{E}\bigl[\Pi(S_T)\bigr]
+\;=\;
+\alpha 
+\int_{0}^{H} (s - S_0)\,f_{S_T}(s)\,\mathrm{d}s
+\;+\;
+\alpha (H - S_0) 
+\int_{H}^{\infty} f_{S_T}(s)\,\mathrm{d}s.
+\]
+
+\end{document}
