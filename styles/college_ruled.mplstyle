@@ -1,0 +1,27 @@
+# college_ruled.mplstyle
+
+# Figure background
+figure.facecolor: "#fdfdf0"
+axes.facecolor:   "#fdfdf0"
+
+# Hide top/right spines
+axes.spines.top:   False
+axes.spines.right: False
+
+# Axis colors: black for x-axis, red for y-axis
+# There's not a direct “red y-axis” parameter alone; we typically set ticks/spines via code.
+# But at least set default axis edgecolor to black, then we can tweak the y-axis in post-processing or partial workaround.
+axes.edgecolor: "black"
+
+# Tick colors
+xtick.color: "black"
+ytick.color: "red"
+
+# Grid settings - if you want a faint horizontal grid to mimic notebook lines
+axes.grid: True
+axes.grid.axis: y       # draw grid only on y-axis
+axes.grid.which: major
+grid.color: "#add8e6"   # light blue
+grid.linestyle: "-"
+grid.linewidth: 0.5
+grid.alpha: 0.4

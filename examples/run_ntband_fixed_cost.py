@@ -3,6 +3,8 @@
 # which is proposed in Imaki et al. 21.
 
 import sys
+import logging
+import time
 import matplotlib.pyplot as plt
 import torch
 import torch.nn.functional as fn
@@ -17,6 +19,24 @@ from pfhedge.nn import Clamp
 from pfhedge.nn import Hedger
 from pfhedge.nn import MultiLayerPerceptron
 
+# from pfhedge.nn import NoTransactionBandNet
+
+# Add logging configuration
+start_time = time.time()
+logging.basicConfig(
+    format='[%(elapsed).3f s] %(message)s',
+    level=logging.INFO,
+    datefmt='%H:%M:%S'
+)
+
+# Create a custom logging filter to add elapsed time
+class ElapsedTimeFilter(logging.Filter):
+    def filter(self, record):
+        record.elapsed = time.time() - start_time
+        return True
+
+# Add the filter to the root logger
+logging.getLogger().addFilter(ElapsedTimeFilter())
 
 class NoTransactionBandNet(Module):
     """Initialize a no-transaction band network.
@@ -60,6 +80,7 @@ class NoTransactionBandNet(Module):
         self.delta = BlackScholes(derivative)
         self.mlp = MultiLayerPerceptron(out_features=2)
         self.clamp = Clamp()
+        self.counter = 0.
 
     def inputs(self):
         return self.delta.inputs() + ["prev_hedge"]
@@ -73,27 +94,34 @@ class NoTransactionBandNet(Module):
         min = delta - fn.leaky_relu(width[..., [0]])
         max = delta + fn.leaky_relu(width[..., [1]])
 
+        # print(f"made {self.counter}  step forward")
+        self.counter += 1
+
         return self.clamp(prev_hedge, min=min, max=max)
 
 
 if __name__ == "__main__":
+
+    DEVICE = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    logging.info(f"Using device: {DEVICE}")
+    
     torch.manual_seed(42)
 
     # Prepare a derivative to hedge
-    derivative = EuropeanOption(BrownianStock(cost=5.5e-4, sigma=0.22))
+    derivative = EuropeanOption(BrownianStock(cost=5.5e-4, sigma=0.22)).to(DEVICE)
 
     # Create your hedger
-    model = NoTransactionBandNet(derivative)
-    hedger = Hedger(model, model.inputs())
+    model = NoTransactionBandNet(derivative).to(DEVICE)
+    hedger = Hedger(model, model.inputs()).to(DEVICE)
 
     # Fit and price
     hedger.fit(derivative, n_paths=10000, n_epochs=200)
     price = hedger.price(derivative, n_paths=10000)
-    print(f"Price={price:.5e}")
+    logging.info(f"Price={price:.5e}")
 
     
     # Generate data for plotting
-    log_moneyness = torch.linspace(-0.1, 0.1, 100)
+    log_moneyness = torch.linspace(-0.5, 0.5, steps100)
     bs_delta = []
     ntb_min = []
     ntb_max = []
@@ -117,3 +145,4 @@ if __name__ == "__main__":
     plt.legend()
     plt.grid(True)
     plt.show()
+    logging.info("Done")
